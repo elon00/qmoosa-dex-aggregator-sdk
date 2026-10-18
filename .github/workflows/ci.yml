@@ -1,0 +1,59 @@
+name: DEX Aggregator SDK Reality CI Gate
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  reality-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sdk repository
+        uses: actions/checkout@v4
+        with:
+          path: qmoosa-dex-aggregator-sdk
+
+      - name: Checkout protocol repository
+        uses: actions/checkout@v4
+        with:
+          repository: elon00/qmoosa-dex-aggregator-protocol
+          path: qmoosa-dex-aggregator-protocol
+
+      - name: Checkout engine repository
+        uses: actions/checkout@v4
+        with:
+          repository: elon00/qmoosa-dex-aggregator-engine
+          path: qmoosa-dex-aggregator-engine
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: qmoosa-dex-aggregator-sdk/package.json
+
+      - name: Build protocol dependency
+        run: |
+          cd qmoosa-dex-aggregator-protocol
+          npm install
+          npm run build
+
+      - name: Build engine dependency
+        run: |
+          cd qmoosa-dex-aggregator-engine
+          npm install
+          npm run build
+
+      - name: Install SDK dependencies
+        working-directory: qmoosa-dex-aggregator-sdk
+        run: npm install
+
+      - name: Build and test SDK
+        working-directory: qmoosa-dex-aggregator-sdk
+        run: npm test
+
+      - name: Static lint
+        working-directory: qmoosa-dex-aggregator-sdk
+        run: npm run lint
