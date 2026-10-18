@@ -1,16 +1,17 @@
 import {
-  DexAggregatorEngine,
   AggregatedRouteQuote,
   SwapExecutionResult,
   AdminActionType,
   SignedAdminIntent,
-  PoolLiquidity
-} from "@qmoosa/dex-aggregator-engine";
-import { DexAggregatorTransactionPayload, ClientConfig } from "./types.js";
+  PoolLiquidity,
+  DexAggregatorTransactionPayload,
+  ClientConfig,
+  EngineLike
+} from "./types.js";
 import { signAdminIntent } from "./crypto.js";
 
 export class DexAggregatorClient {
-  private readonly engine: DexAggregatorEngine;
+  private readonly engine: EngineLike;
   private readonly aggregatorAddress: string;
   private readonly defaultSlippageBps: bigint;
   private readonly defaultDeadlineSeconds: number;
@@ -18,7 +19,7 @@ export class DexAggregatorClient {
   private lastNonce: number = 0;
 
   constructor(
-    engine: DexAggregatorEngine,
+    engine: EngineLike,
     config: ClientConfig = {},
     chainId: number = 31337
   ) {
@@ -34,7 +35,7 @@ export class DexAggregatorClient {
   }
 
   public getAllPools(): PoolLiquidity[] {
-    return this.engine.getAllPools();
+    return (this.engine as any).getAllPools ? (this.engine as any).getAllPools() : [];
   }
 
   public getBestRoute(
